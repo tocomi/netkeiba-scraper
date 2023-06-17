@@ -23,7 +23,6 @@ export const getRaceData = async ({
   const raceRound = Number(rawRaceRound.replace(/R/g, '').trim());
 
   const raceNameElement = await raceElement.$('.RaceName');
-  console.log('👾 -> raceNameElement:', raceNameElement);
   if (!raceNameElement) return;
   const rawRaceName = await getTextContent(raceNameElement);
   if (!rawRaceName) return;
