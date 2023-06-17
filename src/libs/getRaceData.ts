@@ -28,11 +28,19 @@ export const getRaceData = async ({
   if (!rawRaceName) return;
   const raceName = rawRaceName.trim();
 
+  const racePlaceElement = await raceElement.$$('.RaceData02 span');
+  if (!racePlaceElement) return;
+  const racePlace = await getTextContent(racePlaceElement[1]);
+  if (!racePlace) return;
+
+  console.log(`🏇 Target race: ${racePlace} ${raceRound}R ${raceName}`);
+
   const horses = await getHorseData({ page });
 
   return {
     round: raceRound,
     name: raceName,
+    place: racePlace,
     horses,
   };
 };

@@ -8,8 +8,9 @@ import { getRaceData, getTodayRaceUrls, launchBrowser } from './libs';
   const todayRaceUrls = await getTodayRaceUrls(page);
 
   console.log('🏇 Getting race data...');
-  const raceData = await getRaceData({ page, raceUrl: todayRaceUrls[0] });
-  console.log('👾 -> raceData:', raceData);
+  for (const raceUrl of todayRaceUrls) {
+    await getRaceData({ page, raceUrl });
+  }
 
   // ブラウザを閉じる
   await browser.close();
