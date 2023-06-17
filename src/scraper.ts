@@ -1,30 +1,40 @@
-import puppeteer from 'puppeteer';
+import puppeteer, { Page } from 'puppeteer';
 
-(async () => {
-  // ブラウザを起動
+const launchBrowser = async () => {
   const browser = await puppeteer.launch();
   const page = await browser.newPage();
+  return { browser, page };
+};
 
-  // 対象のURLに遷移
-  await page.goto(
-    'https://race.netkeiba.com/race/shutuba_past.html?race_id=202306030811&rf=shutuba_submenu'
-  );
+const getTodayRaceUrls = async (page: Page): Promise<string[]> => {
+  // 開催レース一覧
+  await page.goto('https://race.netkeiba.com/top/');
 
-  // JavaScriptが実行された後のHTMLを取得
   await page.content();
 
-  // 任意の要素をスクレイピング
-  const elements = await page.$$('.Popular');
-  const results = [];
+  // 開催レースの詳細 URL を取得
+  const elements = await page.$$('.RaceList_DataItem');
+  const urls = [];
   for (const element of elements) {
-    const odds = await element.$('span');
-    if (!odds) continue;
-    results.push({
-      text: await (await odds.getProperty('textContent')).jsonValue(),
-    });
+    const raceLink = await element.$('a');
+    if (!raceLink) continue;
+
+    // URL を過去 5 走ページのものに変換
+    const convertedUrl = (
+      await (await raceLink.getProperty('href')).jsonValue()
+    )
+      .replace(/(result|shutuba)/, 'shutuba_past')
+      .replace(/(race_list|race_submenu)/, 'shutuba_submenu');
+    urls.push(convertedUrl);
   }
 
-  console.log(results);
+  return urls;
+};
+
+(async () => {
+  const { browser, page } = await launchBrowser();
+
+  const todayRaceUrls = await getTodayRaceUrls(page);
 
   // ブラウザを閉じる
   await browser.close();
