@@ -10,6 +10,6 @@
     "typescript": "^5.0.4"
   },
   "scripts": {
-    "start": "ts-node ./scraper.ts"
+    "start": "ts-node ./src/scraper.ts"
   }
 }
