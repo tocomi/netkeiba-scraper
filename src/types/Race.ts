@@ -7,7 +7,7 @@ export type Race = {
   horses: Horse[];
 };
 
-export type RaceSummary = Omit<Race, 'horses' | 'place'> & {
+export type RaceSummary = Omit<Race, 'horses'> & {
   /** netkeiba 上で定義されている ID */
   id: number;
   // class: string;
