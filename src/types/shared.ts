@@ -11,3 +11,5 @@ export type RaceClass =
   | 'G2'
   | 'G1'
   | 'OTHER';
+
+export type RaceType = 'turf' | 'dirt' | 'hurdle';

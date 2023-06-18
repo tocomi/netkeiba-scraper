@@ -4,6 +4,7 @@ import {
   getHref,
   getRaceClassFromElementClass,
   getRaceClassFromRaceName,
+  getRaceTypeFromTypeName,
   getTextContent,
 } from './utils';
 
@@ -89,6 +90,39 @@ const getId = async (
   return Number(idMatch[1]);
 };
 
+export const getRaceOtherInfo = async (
+  raceElement: ElementHandle<Element>
+): Promise<
+  | Pick<RaceSummary, 'startTime' | 'type' | 'distance' | 'horseCount'>
+  | undefined
+> => {
+  const startTimeElement = await raceElement.$('.RaceList_Itemtime');
+  if (!startTimeElement) return;
+  const rawStartTime = await getTextContent(startTimeElement);
+  if (!rawStartTime) return;
+  const startTime = rawStartTime.trim();
+
+  const typeAndDistanceElement = await raceElement.$('.RaceList_ItemLong');
+  if (!typeAndDistanceElement) return;
+  // ex. 芝1200m
+  const rawTypeAndDistance = await getTextContent(typeAndDistanceElement);
+  if (!rawTypeAndDistance) return;
+  const type = getRaceTypeFromTypeName(rawTypeAndDistance[0]);
+
+  const distancePattern = /(\d+)m/;
+  const distanceMatch = rawTypeAndDistance.match(distancePattern);
+  if (!distanceMatch) return;
+  const distance = Number(distanceMatch[1]);
+
+  const horseCountElement = await raceElement.$('.RaceList_Itemnumber');
+  if (!horseCountElement) return;
+  const rawHorseCount = await getTextContent(horseCountElement);
+  if (!rawHorseCount) return;
+  const horseCount = Number(rawHorseCount.replace(/頭 /, ''));
+
+  return { startTime, type, distance, horseCount };
+};
+
 export const getTodayRaces = async (page: Page): Promise<RaceSummary[]> => {
   console.log('🏇 Getting today races...');
 
@@ -117,7 +151,10 @@ export const getTodayRaces = async (page: Page): Promise<RaceSummary[]> => {
 
     const raceClass = await getClass(element, name);
 
-    races.push({ id, place, round, name, class: raceClass });
+    const otherInfo = await getRaceOtherInfo(element);
+    if (!otherInfo) continue;
+
+    races.push({ id, place, round, name, class: raceClass, ...otherInfo });
 
     beforeRaceRound = round;
   }
