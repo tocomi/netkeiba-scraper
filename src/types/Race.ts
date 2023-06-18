@@ -1,8 +1,10 @@
 import { Horse } from './Horse';
+import { RaceClass } from './shared';
 
 export type Race = {
   round: number;
   name: string;
+  class: RaceClass;
   place: string;
   horses: Horse[];
 };

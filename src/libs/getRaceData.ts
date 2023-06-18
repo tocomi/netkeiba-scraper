@@ -44,5 +44,7 @@ export const getRaceData = async ({
     name: raceName,
     place: racePlace,
     horses,
+    // FIXME: エラー回避のためのダミー
+    class: 'OTHER',
   };
 };

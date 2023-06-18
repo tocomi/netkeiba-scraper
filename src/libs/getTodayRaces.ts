@@ -1,6 +1,11 @@
 import { ElementHandle, Page } from 'puppeteer';
-import { RaceSummary } from '../types';
-import { getHref, getTextContent } from './utils';
+import { RaceClass, RaceSummary } from '../types';
+import {
+  getHref,
+  getRaceClassFromElementClass,
+  getRaceClassFromRaceName,
+  getTextContent,
+} from './utils';
 
 /**
  * 開催地の一覧を取得する
@@ -33,6 +38,29 @@ const getRound = async (
 
   const round = rawRound.trim().replace(/R/, '');
   return Number(round);
+};
+
+const getClass = async (
+  raceElement: ElementHandle<Element>,
+  raceName: string
+): Promise<RaceClass> => {
+  const classFromRaceName = getRaceClassFromRaceName(raceName);
+  if (classFromRaceName) return classFromRaceName;
+
+  const classElement = await raceElement.$('.Icon_GradeType');
+  if (!classElement) return 'OTHER';
+
+  // ex. Icon_GradeType Icon_GradeType17 Icon_GradePos01
+  const className = await classElement.evaluate(
+    (el) => el.className,
+    classElement
+  );
+  if (className === '') return 'OTHER';
+
+  const raceClass = getRaceClassFromElementClass(className);
+  if (raceClass) return raceClass;
+
+  return 'OTHER';
 };
 
 const getName = async (
@@ -87,7 +115,9 @@ export const getTodayRaces = async (page: Page): Promise<RaceSummary[]> => {
     const name = await getName(element);
     if (!name) continue;
 
-    races.push({ id, place, round, name });
+    const raceClass = await getClass(element, name);
+
+    races.push({ id, place, round, name, class: raceClass });
 
     beforeRaceRound = round;
   }
