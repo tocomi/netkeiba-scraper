@@ -5,12 +5,14 @@ import { getHorseData } from './getHorseData';
 
 export const getRaceData = async ({
   page,
-  raceUrl,
+  raceId,
 }: {
   page: Page;
-  raceUrl: string;
+  raceId: number;
 }): Promise<Race | undefined> => {
-  await page.goto(raceUrl);
+  // 過去 5 走成績のページ
+  const url = `https://race.netkeiba.com/race/shutuba_past.html?race_id=${raceId}&rf=shutuba_submenu`;
+  await page.goto(url);
 
   const raceElement = await page.$('.RaceList_NameBox');
   if (!raceElement) return;
