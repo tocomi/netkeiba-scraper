@@ -1,3 +1,3 @@
 export * from './launchBrowser';
-export * from './getTodayRaceUrls';
+export * from './getTodayRaces';
 export * from './getRaceData';

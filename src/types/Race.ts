@@ -6,3 +6,13 @@ export type Race = {
   place: string;
   horses: Horse[];
 };
+
+export type RaceSummary = Omit<Race, 'horses' | 'place'> & {
+  /** netkeiba 上で定義されている ID */
+  id: number;
+  // class: string;
+  // startTime: string;
+  // groundType: string;
+  // distance: number;
+  // horseCount: number;
+};
