@@ -43,6 +43,8 @@ const getId = async (
 };
 
 export const getTodayRaces = async (page: Page): Promise<RaceSummary[]> => {
+  console.log('🏇 Getting today races...');
+
   // 開催レース一覧
   await page.goto('https://race.netkeiba.com/top/');
 
