@@ -1,12 +1,30 @@
-import { ElementHandle, Page } from 'puppeteer';
-import { Record } from '../types';
-import { getTextContent } from './utils';
+import { ElementHandle } from 'puppeteer';
+import { getRaceClassFromRaceName, getTextContent } from './utils';
+import { getRaceClassFromClassBadge } from './utils/getRaceClassFromClassBadge';
+import { RaceClass, Record } from '@/types';
 
 const dummyRecord: Record = {
-  raceDate: '-',
-  racePlace: '-',
-  raceName: '-',
+  date: '-',
+  place: '-',
+  name: '-',
+  class: 'OTHER',
   diff: 0,
+};
+
+const getClass = async (
+  recordElement: ElementHandle<Element>,
+  raceName: string
+): Promise<RaceClass> => {
+  const classFromRaceName = getRaceClassFromRaceName(raceName);
+  if (classFromRaceName) return classFromRaceName;
+
+  const classElement = await recordElement.$('.Icon_GradeType');
+  if (!classElement) return 'OTHER';
+  // ex. GIII
+  const rawClass = await getTextContent(classElement);
+  if (!rawClass) return 'OTHER';
+
+  return getRaceClassFromClassBadge(rawClass);
 };
 
 /**
@@ -41,6 +59,8 @@ export const getHorseRecords = async ({
     if (!rawName) continue;
     const name = rawName.split('\n')[0].trim();
 
+    const raceClass = await getClass(recordElement, name);
+
     const diffElement = await recordElement.$('.Data07');
     if (!diffElement) continue;
     // ex. ロードトゥフェイム(3.1)
@@ -49,9 +69,10 @@ export const getHorseRecords = async ({
     const diff = Number(rawDiff.split('(')[1].split(')')[0]);
 
     records.push({
-      raceDate: date,
-      racePlace: place,
-      raceName: name,
+      date,
+      place,
+      name,
+      class: raceClass,
       diff,
     });
   }

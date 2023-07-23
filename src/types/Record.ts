@@ -1,6 +1,9 @@
+import { RaceClass } from './shared';
+
 export type Record = {
-  raceDate: string;
-  racePlace: string;
-  raceName: string;
+  date: string;
+  place: string;
+  name: string;
+  class: RaceClass;
   diff: number;
 };

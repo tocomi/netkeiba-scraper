@@ -1,4 +1,4 @@
-import { RaceClass } from '../../types';
+import { RaceClass } from '@/types';
 
 /**
  * レースの名前からクラスが分かる場合はクラスを返す

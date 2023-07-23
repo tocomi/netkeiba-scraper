@@ -1,4 +1,4 @@
-import { RaceType } from '../../types';
+import { RaceType } from '@/types';
 
 export const getRaceTypeFromTypeName = (typeName: string): RaceType => {
   if (typeName === '芝') return 'turf';
