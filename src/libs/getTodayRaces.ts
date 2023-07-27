@@ -167,6 +167,5 @@ export const getTodayRaces = async (page: Page): Promise<Race[]> => {
     });
   }
 
-  console.log('👾 -> races:', races);
   return races;
 };
