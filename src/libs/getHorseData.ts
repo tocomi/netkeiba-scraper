@@ -21,10 +21,11 @@ export const getHorseData = async ({
 
     const horseLink = await horseInfo.$('.Horse02 a');
     if (!horseLink) continue;
+    const url = await getHref(horseLink);
 
-    const horseUrl = await getHref(horseLink);
-    const horseName = await getTextContent(horseLink);
-    if (!horseName) continue;
+    const rawName = await getTextContent(horseLink);
+    if (!rawName) continue;
+    const name = rawName.trim();
 
     const horseNumberElement = await horseElement.$('.Waku');
     if (!horseNumberElement) continue;
@@ -72,8 +73,8 @@ export const getHorseData = async ({
     const records = await getHorseRecords({ horseElement });
 
     horses.push({
-      name: horseName,
-      url: horseUrl,
+      name,
+      url,
       horseNumber,
       gateNumber,
       odds,
