@@ -1,11 +1,10 @@
 # puppeteerの公式Dockerイメージを使用
-FROM ghcr.io/puppeteer/puppeteer:19.9.0
+FROM --platform=linux/arm64 ghcr.io/puppeteer/puppeteer:19.9.0
 LABEL author="tocomi"
 
 # アプリケーションディレクトリを作成
 USER pptruser
 WORKDIR /home/pptruser/app
-
 
 # パッケージ依存関係のコピーとインストール
 COPY --chown=pptruser:pptruser package.json ./
