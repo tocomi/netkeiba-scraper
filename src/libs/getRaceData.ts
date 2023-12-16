@@ -7,6 +7,7 @@ import {
   getTextContent,
 } from './utils';
 import { Race, RaceClass } from '@/types';
+import { sleep } from './utils/sleep';
 
 const getClass = async (
   raceElement: ElementHandle<Element>,
@@ -40,9 +41,28 @@ export const getRaceData = async ({
 }): Promise<Race | undefined> => {
   // 過去 5 走成績のページ
   const url = `https://race.netkeiba.com/race/shutuba_past.html?race_id=${raceId}&rf=shutuba_submenu`;
-  await page.goto(url);
 
-  const raceElement = await page.$('.RaceList_NameBox');
+  /**
+   * レース情報に関係ない一部のコンテンツの読み込みが終わらない場合がありタイムアウトしてしまうので、
+   * DOMの読み込みが終わったら処理を進めてしまう
+   */
+  await page.goto(url, {
+    waitUntil: 'domcontentloaded',
+  });
+
+  /**
+   * レースの情報は非同期で取得されるので、取得が完了するまでポーリングする
+   */
+  const getRaceElement = async (): Promise<ElementHandle<Element>> => {
+    const raceElement = await page.$('.RaceList_NameBox');
+    if (!raceElement) {
+      await sleep(1000);
+      return getRaceElement();
+    }
+    return raceElement;
+  };
+
+  const raceElement = await getRaceElement();
   if (!raceElement) return;
 
   const raceRoundElement = await raceElement.$('.RaceNum');

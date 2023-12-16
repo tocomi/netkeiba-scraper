@@ -7,6 +7,7 @@ import {
   getTextContent,
 } from './utils';
 import { RaceClass, Race, Horse } from '@/types';
+import { sleep } from './utils/sleep';
 
 /**
  * 開催地の一覧を取得する
@@ -126,10 +127,28 @@ const DUMMY_HORSES: Horse[] = [];
 export const getTodayRaces = async (page: Page): Promise<Race[]> => {
   console.log('🏇 Getting today races...');
 
-  // 開催レース一覧
-  await page.goto('https://race.netkeiba.com/top/');
+  /**
+   * 開催レース一覧
+   * レース情報に関係ない一部のコンテンツの読み込みが終わらない場合がありタイムアウトしてしまうので、
+   * DOMの読み込みが終わったら処理を進めてしまう
+   */
+  await page.goto('https://race.netkeiba.com/top/', {
+    waitUntil: 'domcontentloaded',
+  });
 
-  const elements = await page.$$('.RaceList_DataItem');
+  /**
+   * レースの情報は非同期で取得されるので、取得が完了するまでポーリングする
+   */
+  const getElements = async (): Promise<ElementHandle<Element>[]> => {
+    const elements = await page.$$('.RaceList_DataItem');
+    if (elements.length === 0) {
+      await sleep(1000);
+      return getElements();
+    }
+    return elements;
+  };
+
+  const elements = await getElements();
   const places = await getPlaces(page);
   const races: Race[] = [];
   let currentPlaceIndex = 0;
