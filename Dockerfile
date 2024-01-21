@@ -1,5 +1,5 @@
 # puppeteerの公式Dockerイメージを使用
-FROM --platform=linux/arm64 ghcr.io/puppeteer/puppeteer:19.9.0
+FROM --platform=linux/arm64 ghcr.io/puppeteer/puppeteer:21.7.0
 LABEL author="tocomi"
 
 # アプリケーションディレクトリを作成
