@@ -39,6 +39,8 @@ export const getRaceData = async ({
   page: Page;
   raceId: number;
 }): Promise<Race | undefined> => {
+  console.log(`🏇 Start get race detail: raceId: ${raceId}`);
+
   // 過去 5 走成績のページ
   const url = `https://race.netkeiba.com/race/shutuba_past.html?race_id=${raceId}&rf=shutuba_submenu`;
 
@@ -114,12 +116,12 @@ export const getRaceData = async ({
   const horseCountMatch = rawHorseCount.match(/(\d+)頭/);
   if (!horseCountMatch) return;
   const horseCount = Number(horseCountMatch[1]);
-
   console.log(
     `🏇 Target race: ${racePlace} ${raceRound}R ${raceName} ${raceClass}`
   );
 
   const horses = await getHorseData({ page });
+  console.log(`🏇 Horse count: ${horses.length}`);
 
   return {
     id: raceId,

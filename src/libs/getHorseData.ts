@@ -1,4 +1,4 @@
-import { Page } from 'puppeteer';
+import { ElementHandle, Page } from 'puppeteer';
 import { getHorseRecords } from './getHorseRecords';
 import { getHref, getTextContent } from './utils';
 import { getHorseSexFromText } from './utils/getHorseSexFromText';
@@ -15,59 +15,61 @@ export const getHorseData = async ({
   const horseElements = await page.$$('#sort_table .HorseList');
 
   const horses: Horse[] = [];
-  for (const horseElement of horseElements) {
+  const _getHorseData = async (
+    horseElement: ElementHandle<Element>
+  ): Promise<void> => {
     const horseInfo = await horseElement.$('#Horse_Info_Data');
-    if (!horseInfo) continue;
+    if (!horseInfo) return;
 
     const horseLink = await horseInfo.$('.Horse02 a');
-    if (!horseLink) continue;
+    if (!horseLink) return;
     const url = await getHref(horseLink);
 
     const rawName = await getTextContent(horseLink);
-    if (!rawName) continue;
+    if (!rawName) return;
     const name = rawName.trim();
 
     const horseNumberElement = await horseElement.$('.Waku');
-    if (!horseNumberElement) continue;
+    if (!horseNumberElement) return;
     const horseNumber = Number(await getTextContent(horseNumberElement));
 
     const gateNumberElement = await horseElement.$$('td');
-    if (!gateNumberElement.length) continue;
+    if (!gateNumberElement.length) return;
     const gateNumber = Number(await getTextContent(gateNumberElement[0]));
 
     const oddsAndRankElements = await horseElement.$$('.Popular span');
-    if (!oddsAndRankElements.length) continue;
+    if (!oddsAndRankElements.length) return;
     const rawOdds = await getTextContent(oddsAndRankElements[0]);
-    if (!rawOdds) continue;
+    if (!rawOdds) return;
     const odds = Number(rawOdds);
 
     // ex. (12人気)
     const rawOddsRank = await getTextContent(oddsAndRankElements[1]);
-    if (!rawOddsRank) continue;
+    if (!rawOddsRank) return;
     const oddsRankMatch = rawOddsRank.match(/(\d+)人気/);
-    if (!oddsRankMatch) continue;
+    if (!oddsRankMatch) return;
     const oddsRank = Number(oddsRankMatch[1]);
 
     const sexAndAgeElement = await horseElement.$('.Barei');
-    if (!sexAndAgeElement) continue;
+    if (!sexAndAgeElement) return;
     // ex. 牡3青鹿
     const rawSexAndAge = await getTextContent(sexAndAgeElement);
-    if (!rawSexAndAge) continue;
+    if (!rawSexAndAge) return;
     const sex = getHorseSexFromText(rawSexAndAge[0]);
 
     const ageMatch = rawSexAndAge.match(/(\d+)/);
-    if (!ageMatch) continue;
+    if (!ageMatch) return;
     const age = Number(ageMatch[1]);
 
     const jockeyElement = await horseElement.$('.Jockey a');
-    if (!jockeyElement) continue;
+    if (!jockeyElement) return;
     const jockey = await getTextContent(jockeyElement);
-    if (!jockey) continue;
+    if (!jockey) return;
 
     const handiElement = await horseElement.$$('.Jockey span');
-    if (!handiElement.length) continue;
+    if (!handiElement.length) return;
     const rawHandi = await getTextContent(handiElement[1]);
-    if (!rawHandi) continue;
+    if (!rawHandi) return;
     const handi = Number(rawHandi);
 
     const records = await getHorseRecords({ horseElement });
@@ -85,7 +87,10 @@ export const getHorseData = async ({
       handi,
       records,
     });
-  }
+  };
 
-  return horses;
+  const promises = horseElements.map(_getHorseData);
+  await Promise.all(promises);
+
+  return horses.sort((a, b) => a.horseNumber - b.horseNumber);
 };
