@@ -12,6 +12,8 @@ export const getHorseData = async ({
 }: {
   page: Page;
 }): Promise<Horse[]> => {
+  console.log(`🏇 [HorseData] Start.`);
+
   const horseElements = await page.$$('#sort_table .HorseList');
 
   const horses: Horse[] = [];
@@ -91,6 +93,8 @@ export const getHorseData = async ({
 
   const promises = horseElements.map(_getHorseData);
   await Promise.all(promises);
+
+  console.log(`🏇 [HorseData] Finish. Horse count: ${horses.length}`);
 
   return horses.sort((a, b) => a.horseNumber - b.horseNumber);
 };
