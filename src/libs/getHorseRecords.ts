@@ -37,35 +37,38 @@ export const getHorseRecords = async ({
   horseElement: ElementHandle<Element>;
 }): Promise<Record[]> => {
   const recordElements = await horseElement.$$('.Past, .Rest');
+
   const records: Record[] = [];
-  for (const recordElement of recordElements) {
+  const _getHorseRecords = async (
+    recordElement: ElementHandle<Element>
+  ): Promise<void> => {
     const dateAndPlaceElements = await recordElement.$$('.Data01 span');
-    if (!dateAndPlaceElements) continue;
+    if (!dateAndPlaceElements) return;
     // 休養期間 or 出走記録なし
     if (dateAndPlaceElements.length === 0) {
       // TODO: 休養期間をデータに入れておく？
       records.push(dummyRecord);
-      continue;
+      return;
     }
     // ex. 2022.11.27 東京
     const dateAndPlace = await getTextContent(dateAndPlaceElements[0]);
-    if (!dateAndPlace) continue;
+    if (!dateAndPlace) return;
     const [date, place] = dateAndPlace.split(/\s/);
 
     const nameElement = await recordElement.$('.Data02 a');
-    if (!nameElement) continue;
+    if (!nameElement) return;
     // ex. 袖ケ浦特別\n\n\n\n\n\n\n\n\n\n\n\n\n\n2勝
     const rawName = await getTextContent(nameElement);
-    if (!rawName) continue;
+    if (!rawName) return;
     const name = rawName.split('\n')[0].trim();
 
     const raceClass = await getClass(recordElement, name);
 
     const diffElement = await recordElement.$('.Data07');
-    if (!diffElement) continue;
+    if (!diffElement) return;
     // ex. ロードトゥフェイム(3.1)
     const rawDiff = await getTextContent(diffElement);
-    if (!rawDiff) continue;
+    if (!rawDiff) return;
     const diff = Number(rawDiff.split('(')[1].split(')')[0]);
 
     records.push({
@@ -75,7 +78,14 @@ export const getHorseRecords = async ({
       class: raceClass,
       diff,
     });
-  }
+  };
 
-  return records;
+  const promises = recordElements.map(_getHorseRecords);
+  await Promise.all(promises);
+
+  return records.sort((a, b) => {
+    if (a.date > b.date) return -1;
+    if (a.date < b.date) return 1;
+    return 0;
+  });
 };
